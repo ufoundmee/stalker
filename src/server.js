@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
+const { test } = require('./controllers/testPassword');
+const data = require('cg.json');
 
 const app = express();
 
@@ -10,13 +12,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
-// Import routes
-const userRoutes = require('./routes/detailsRoutes');
-const productRoutes = require('./routes/userRoutes');
-
-// Use routes
-app.use('/api/users', userRoutes);
-app.use('/api/products', detailsRoutes);
+app.get('/details', (req, res)=>{
+    let enr = req.enr
+    let pwd = req.pwd
+    if(test(enr, pwd)){
+        const dataUser = findByEnrolmentNo(enr);
+        return res.status(200).send(dataUser);
+    }else{
+        return res.status(404).send('user not found');
+    }
+})
 
 // Handle 404 errors
 app.use((req, res, next) => {
@@ -35,11 +40,13 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-
-
-
-
-
+function findByEnrolmentNo(enrolmentNo) {
+    return data.find(entry => {
+        const content = entry["Enrolment No."].content;
+        // Check if the Enrolment No. matches
+        return content.includes(`Enrolment No. : ${enrolmentNo}`);
+    });
+}
 
 
 // const express = require('express');
